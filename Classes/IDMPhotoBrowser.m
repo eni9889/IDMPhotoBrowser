@@ -215,7 +215,6 @@
 {
     // Initial Setup
     IDMZoomingScrollView *scrollView = [self pageDisplayedAtIndex:_currentPageIndex];
-    //IDMTapDetectingImageView *moveImageView = scrollView.photoImageView;
 
     static float firstX, firstY;
     float viewHeight = scrollView.frame.size.height;
@@ -227,6 +226,7 @@
     if ([(UIPanGestureRecognizer*)sender state] == UIGestureRecognizerStateBegan)
     {
         [self setControlsHidden:YES animated:YES permanent:YES];
+        [[UIApplication sharedApplication] setStatusBarHidden:NO];
         
         firstX = [scrollView center].x;
         firstY = [scrollView center].y;
@@ -237,15 +237,10 @@
     
     float newY = scrollView.center.y - viewHalfHeight;
     float newAlpha = 1 - abs(newY)/viewHeight;
-    //float newAlpha = abs(newY)/viewHeight * 1.8;
     
     self.view.opaque = YES;
     
     self.view.backgroundColor = [UIColor colorWithWhite:(_useWhiteBackgroundColor ? 1 : 0) alpha:newAlpha];
-    
-    /*UIImageView *backgroundImageView = [[UIImageView alloc] initWithImage:_backgroundScreenshot];
-    backgroundImageView.alpha = 1 - newAlpha;
-    self.view.backgroundColor = [UIColor colorWithPatternImage:[self getImageFromView:backgroundImageView]];*/
     
     // Gesture Ended
     if ([(UIPanGestureRecognizer*)sender state] == UIGestureRecognizerStateEnded)
@@ -278,7 +273,6 @@
         else // Continue Showing View
         {
             self.view.backgroundColor = [UIColor colorWithWhite:(_useWhiteBackgroundColor ? 1 : 0) alpha:1];
-            //self.view.backgroundColor = [UIColor colorWithPatternImage:[self getImageFromView:backgroundImageView]];
             
             CGFloat velocityY = (.35*[(UIPanGestureRecognizer*)sender velocityInView:self.view].y); 
             
@@ -294,6 +288,8 @@
             [UIView setAnimationDidStopSelector:@selector(animationDidFinish)];
             [scrollView setCenter:CGPointMake(finalX, finalY)];
             [UIView commitAnimations];
+            
+            [self setControlsHidden:NO animated:YES permanent:YES];
         }
     }
 }
@@ -642,8 +638,23 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 
 #pragma mark - Rotation
 
+- (NSUInteger) supportedInterfaceOrientations
+{
+    // Return a bitmask of supported orientations. If you need more,
+    // use bitwise or (see the commented return).
+    return UIInterfaceOrientationMaskPortrait;
+    // return UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
+}
+
+- (UIInterfaceOrientation) preferredInterfaceOrientationForPresentation {
+    // Return the orientation you'd prefer - this is what it launches to. The
+    // user can still rotate. You don't have to implement this method, in which
+    // case it launches in the current orientation
+    return UIInterfaceOrientationPortrait;
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
-    return YES;
+    return NO;
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
@@ -1032,7 +1043,8 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     [self cancelControlHiding];
 	
 	// Status bar and nav bar positioning
-    if (self.wantsFullScreenLayout) {
+    if (self.wantsFullScreenLayout)
+    {
         // Status Bar
         if ([UIApplication instancesRespondToSelector:@selector(setStatusBarHidden:withAnimation:)]) {
             [[UIApplication sharedApplication] setStatusBarHidden:hidden
@@ -1219,7 +1231,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
         if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
             emailer.modalPresentationStyle = UIModalPresentationPageSheet;
         }
-        [self presentModalViewController:emailer animated:YES];
+        [self presentViewController:emailer animated:YES completion:nil];
         [self hideProgressHUD:NO];
     }
 }
@@ -1233,7 +1245,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
                                                         delegate:nil cancelButtonTitle:NSLocalizedString(@"Dismiss", nil) otherButtonTitles:nil];
 		[alert show];
     }
-	[self dismissModalViewControllerAnimated:YES];
+	[self dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - SVProgressHUD
