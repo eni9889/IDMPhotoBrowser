@@ -174,7 +174,38 @@
     return self;
 }
 
-- (id)initWithPhotos:(NSArray *)photosArray {
+
+-(void)loadImgurAlbumWithID:(NSString *)albumID withHandler:(IDCompletionHandler)handler
+{
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.imgur.com/3/album/%@/images",albumID]];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    [request setValue:@"Client-ID c0d2e610b925da4" forHTTPHeaderField:@"Authorization"];
+    AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON)
+     {
+         NSArray *images = [JSON valueForKey:@"data"];
+         CCLOGINFO(@"App.net Global Stream: %@", images);
+         
+         NSMutableArray *photosArray = [[NSMutableArray alloc] init];
+         
+         for (NSDictionary *imageData in images)
+         {
+             NSString *title = nilOrJSONObjectForKey(imageData, @"description");
+             IDMPhoto *photo = [IDMPhoto photoWithURL:[NSURL URLWithString:[imageData valueForKey:@"link"]]];
+             photo.caption = title;
+             [photosArray addObject:photo];
+         }
+         
+         _newPhotos = [[NSMutableArray alloc] initWithArray:photosArray];
+         
+         handler(JSON, nil);
+         
+     } failure:nil];
+        
+    [operation start];
+}
+
+- (id)initWithPhotos:(NSArray *)photosArray
+{
     if ((self = [self init])) {
 		_newPhotos = [[NSMutableArray alloc] initWithArray:photosArray];
 	}
@@ -638,23 +669,8 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 
 #pragma mark - Rotation
 
-- (NSUInteger) supportedInterfaceOrientations
-{
-    // Return a bitmask of supported orientations. If you need more,
-    // use bitwise or (see the commented return).
-    return UIInterfaceOrientationMaskPortrait;
-    // return UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
-}
-
-- (UIInterfaceOrientation) preferredInterfaceOrientationForPresentation {
-    // Return the orientation you'd prefer - this is what it launches to. The
-    // user can still rotate. You don't have to implement this method, in which
-    // case it launches in the current orientation
-    return UIInterfaceOrientationPortrait;
-}
-
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
-    return NO;
+    return YES;
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {

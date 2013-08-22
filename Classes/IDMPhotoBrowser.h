@@ -19,6 +19,8 @@
 #define IDMLog(x, ...)
 #endif
 
+typedef void (^IDCompletionHandler)(id response, NSError *error);
+
 // Delgate
 @class IDMPhotoBrowser;
 @protocol IDMPhotoBrowserDelegate <NSObject>
@@ -44,6 +46,7 @@
 // Customization
 @property (nonatomic) BOOL useWhiteBackgroundColor;
 
+-(void)loadImgurAlbumWithID:(NSString *)albumID withHandler:(IDCompletionHandler)handler;
 
 // Init
 - (id)initWithPhotos:(NSArray *)photosArray;
