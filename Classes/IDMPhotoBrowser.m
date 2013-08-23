@@ -535,7 +535,17 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     [items addObject:flexSpace];
     
     if(_displayActionButton)
+    {
         [items addObject:_actionButton];
+    }
+    
+    /*
+    self.commentButton = [[RKCommentButton alloc] init];
+    [self.commentButton addTarget:self action:@selector(commentButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    [self.commentButton setTitle:[NSString stringWithFormat:@"%d",[self.story commentCount]] forState:UIControlStateNormal];
+    UIBarButtonItem *actionButton = [[UIBarButtonItem alloc] initWithCustomView:self.commentButton];
+    [items addObject:actionButton];
+    */
     
     [_toolbar setItems:items];
 	[self updateNavigation];
@@ -1148,6 +1158,23 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
         UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
         rootViewController.modalPresentationStyle = 0;
     }];
+}
+
+-(void)commentButtonPressed:(id)sender
+{
+    RKCommentsViewController* vc = [[RKCommentsViewController alloc] initWithStory:self.story];
+    
+    id appearance = [MZFormSheetController appearance];
+    [appearance setPresentedFormSheetSize:CGSizeMake(310.0,420.0)];
+    MZFormSheetController *formSheet = [[MZFormSheetController alloc] initWithViewController:vc];
+    formSheet.shouldDismissOnBackgroundViewTap = YES;
+    formSheet.transitionStyle = MZFormSheetTransitionStyleSlideFromBottom;
+    
+    [self presentFormSheetController:formSheet animated:YES completionHandler:^(MZFormSheetController *formSheetController) {
+        
+    }];
+    
+    
 }
 
 - (void)actionButtonPressed:(id)sender {

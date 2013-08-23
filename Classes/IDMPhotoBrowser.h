@@ -12,6 +12,10 @@
 #import "IDMPhotoProtocol.h"
 #import "IDMCaptionView.h"
 
+#import "RKCommentButton.h"
+#import "RKStory.h"
+#import "RKCommentsViewController.h"
+
 // Debug Logging
 #if 0 // Set to 1 to enable debug logging
 #define IDMLog(x, ...) NSLog(x, ## __VA_ARGS__);
@@ -42,6 +46,9 @@ typedef void (^IDCompletionHandler)(id response, NSError *error);
 @property (nonatomic) BOOL displayCounterLabel;
 @property (nonatomic) BOOL displayActionButton;
 @property (nonatomic, retain) NSArray *actionButtonTitles;
+
+//@property (nonatomic, strong) RKCommentButton *commentButton;
+@property (nonatomic, strong) RKStory *story;
 
 // Customization
 @property (nonatomic) BOOL useWhiteBackgroundColor;
