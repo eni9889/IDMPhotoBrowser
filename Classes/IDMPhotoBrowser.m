@@ -1164,6 +1164,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 {
     RKCommentsViewController* vc = [[RKCommentsViewController alloc] initWithStory:self.story];
     
+    /*
     id appearance = [MZFormSheetController appearance];
     [appearance setPresentedFormSheetSize:CGSizeMake(310.0,420.0)];
     MZFormSheetController *formSheet = [[MZFormSheetController alloc] initWithViewController:vc];
@@ -1173,7 +1174,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     [self presentFormSheetController:formSheet animated:YES completionHandler:^(MZFormSheetController *formSheetController) {
         
     }];
-    
+    */
     
 }
 
