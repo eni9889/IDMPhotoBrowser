@@ -182,16 +182,16 @@
     [request setValue:@"Client-ID c0d2e610b925da4" forHTTPHeaderField:@"Authorization"];
     AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON)
      {
-         NSArray *images = [JSON valueForKey:@"data"];
-         CCLOGINFO(@"App.net Global Stream: %@", images);
+         NSArray *imagesDictionary = [JSON valueForKey:@"data"];
+         NSArray *images = [ImgurImage arrayOfModelsFromDictionaries:imagesDictionary];
+         CCLOG(@"Images: %@", images);
          
          NSMutableArray *photosArray = [[NSMutableArray alloc] init];
          
-         for (NSDictionary *imageData in images)
+         for (ImgurImage *image in images)
          {
-             NSString *title = nilOrJSONObjectForKey(imageData, @"description");
-             IDMPhoto *photo = [IDMPhoto photoWithURL:[NSURL URLWithString:[imageData valueForKey:@"link"]]];
-             photo.caption = title;
+             IDMPhoto *photo = [IDMPhoto photoWithURL:[NSURL URLWithString:[image link]]];
+             photo.caption = [image title];
              [photosArray addObject:photo];
          }
          

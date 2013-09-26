@@ -16,6 +16,8 @@
 #import "RKStory.h"
 #import "RKCommentsViewController.h"
 
+#import "ImgurImage.h"
+
 // Debug Logging
 #if 0 // Set to 1 to enable debug logging
 #define IDMLog(x, ...) NSLog(x, ## __VA_ARGS__);
