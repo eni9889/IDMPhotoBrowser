@@ -97,40 +97,45 @@ caption = _caption;
         else if (_photoURL)
         {
             // Load async from web (using AFNetworking)
+            __weak IDMPhoto *blockSafeSelf = self;
             NSURLRequest *request = [NSURLRequest requestWithURL:_photoURL];
-            
             AFImageRequestOperation *operation = [[AFImageRequestOperation alloc] initWithRequest:request];
-            
-            
+        
             [operation setDownloadProgressBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
                 CGFloat progress = ((CGFloat)totalBytesRead)/((CGFloat)totalBytesExpectedToRead);
-                if (self.progressUpdateBlock)
+                if (blockSafeSelf.progressUpdateBlock)
                 {
-                    self.progressUpdateBlock(progress);
+                    blockSafeSelf.progressUpdateBlock(progress);
                 }
             }];
             
             [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject)
             {
-                if ([[[_photoURL absoluteString] lowercaseString] hasSuffix:@".gif"])
+                CCLOG(@"Got image with mime type: %@",operation.response.MIMEType);
+                if ([[operation.response.MIMEType lowercaseString] isEqualToString:@"image/gif"])
                 {
                     CCLOG(@"Request operation done");
-                    self.underlyingImage = [UIImage animatedImageWithAnimatedGIFData:operation.responseData];
+                    blockSafeSelf.underlyingImage = [UIImage animatedImageWithAnimatedGIFData:operation.responseData];
                 }
                 else
                 {
-                    self.underlyingImage = responseObject;
+                    blockSafeSelf.underlyingImage = responseObject;
                 }
                 
-                [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
+                [blockSafeSelf performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
                 
             } failure:^(AFHTTPRequestOperation *operation, NSError *error)
             {
+                // Failed - no source
+                self.underlyingImage = nil;
+                [self imageLoadingComplete];
                 
             }];
             
             [operation start];
-        } else {
+            
+        } else
+        {
             // Failed - no source
             self.underlyingImage = nil;
             [self imageLoadingComplete];
