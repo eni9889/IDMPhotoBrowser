@@ -94,12 +94,6 @@ caption = _caption;
             [self performSelectorInBackground:@selector(loadImageFromFileAsync) withObject:nil];
             
         }
-        /*
-        else if (_photoURL && [[[_photoURL absoluteString] lowercaseString] hasSuffix:@".gif"])
-        {
-            [self performSelectorInBackground:@selector(loadUnderlyingGifFromURL) withObject:nil];
-        }
-         */
         else if (_photoURL)
         {
             // Load async from web (using AFNetworking)
@@ -191,7 +185,8 @@ caption = _caption;
 
 // Called in background
 // Load image in background from local file
-- (void)loadImageFromFileAsync {
+- (void)loadImageFromFileAsync
+{
     @autoreleasepool {
         @try {
             NSError *error = nil;
@@ -205,25 +200,6 @@ caption = _caption;
         } @catch (NSException *exception) {
         } @finally {
             self.underlyingImage = [self decodedImageWithImage: self.underlyingImage];
-            [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
-        }
-    }
-}
-
--(void)loadUnderlyingGifFromURL
-{
-    @autoreleasepool {
-        @try {
-            UIImage *data = [UIImage animatedImageWithAnimatedGIFURL:_photoURL];
-            if (data != nil)
-            {
-                self.underlyingImage = data;
-            } else
-            {
-                self.underlyingImage = nil;
-            }
-        } @catch (NSException *exception) {
-        } @finally {
             [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
         }
     }
