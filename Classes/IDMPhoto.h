@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "IDMPhotoProtocol.h"
 #import "AFNetworking.h"
+#import "UIImage+animatedGIF.h"
 
 // This class models a photo/image and it's caption
 // If you want to handle photos, caching, decompression

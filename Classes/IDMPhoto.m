@@ -88,25 +88,51 @@ caption = _caption;
         // Image already loaded
         [self imageLoadingComplete];
     } else {
-        if (_photoPath) {
+        if (_photoPath)
+        {
             // Load async from file
             [self performSelectorInBackground:@selector(loadImageFromFileAsync) withObject:nil];
-        } else if (_photoURL) {
+            
+        }
+        /*
+        else if (_photoURL && [[[_photoURL absoluteString] lowercaseString] hasSuffix:@".gif"])
+        {
+            [self performSelectorInBackground:@selector(loadUnderlyingGifFromURL) withObject:nil];
+        }
+         */
+        else if (_photoURL)
+        {
             // Load async from web (using AFNetworking)
             NSURLRequest *request = [NSURLRequest requestWithURL:_photoURL];
             
-            AFImageRequestOperation *operation = [AFImageRequestOperation
-                                                  imageRequestOperationWithRequest:request
-                                                  success:^(UIImage *image) {
-                                                      self.underlyingImage = image;
-                                                      [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
-                                                  }];
+            AFImageRequestOperation *operation = [[AFImageRequestOperation alloc] initWithRequest:request];
+            
             
             [operation setDownloadProgressBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
                 CGFloat progress = ((CGFloat)totalBytesRead)/((CGFloat)totalBytesExpectedToRead);
-                if (self.progressUpdateBlock) {
+                if (self.progressUpdateBlock)
+                {
                     self.progressUpdateBlock(progress);
                 }
+            }];
+            
+            [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject)
+            {
+                if ([[[_photoURL absoluteString] lowercaseString] hasSuffix:@".gif"])
+                {
+                    CCLOG(@"Request operation done");
+                    self.underlyingImage = [UIImage animatedImageWithAnimatedGIFData:operation.responseData];
+                }
+                else
+                {
+                    self.underlyingImage = responseObject;
+                }
+                
+                [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
+                
+            } failure:^(AFHTTPRequestOperation *operation, NSError *error)
+            {
+                
             }];
             
             [operation start];
@@ -117,6 +143,8 @@ caption = _caption;
         }
     }
 }
+
+
 
 // Release if we can get it again from path or url
 - (void)unloadUnderlyingImage {
@@ -177,6 +205,25 @@ caption = _caption;
         } @catch (NSException *exception) {
         } @finally {
             self.underlyingImage = [self decodedImageWithImage: self.underlyingImage];
+            [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
+        }
+    }
+}
+
+-(void)loadUnderlyingGifFromURL
+{
+    @autoreleasepool {
+        @try {
+            UIImage *data = [UIImage animatedImageWithAnimatedGIFURL:_photoURL];
+            if (data != nil)
+            {
+                self.underlyingImage = data;
+            } else
+            {
+                self.underlyingImage = nil;
+            }
+        } @catch (NSException *exception) {
+        } @finally {
             [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
         }
     }
