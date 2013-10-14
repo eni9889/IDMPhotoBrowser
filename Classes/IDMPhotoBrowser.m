@@ -10,6 +10,9 @@
 #import "IDMPhotoBrowser.h"
 #import "IDMZoomingScrollView.h"
 #import "SVProgressHUD.h"
+#import "PocketAPIActivity.h"
+#import "ALAlertBanner.h"
+#import "AppDelegate.h"
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
 #define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
@@ -1178,8 +1181,82 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
 }
 
-- (void)actionButtonPressed:(id)sender {
-    if (_actionsSheet) {
+- (void)actionButtonPressed:(id)sender
+{
+    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 6.0)
+    {
+        //-- set up the data objects
+        NSString *textObject = @"Check out this link from Karma app for iPhone";
+        UIImage *image = Nil;
+    
+        id <IDMPhoto> photo = [self photoAtIndex:_currentPageIndex];
+        if ([self numberOfPhotos] > 0 && [photo underlyingImage])
+        {
+            image = [photo underlyingImage];
+        }
+        
+        
+        NSArray *activityItems = [NSArray arrayWithObjects:textObject, self.story.url,  image, nil];
+        
+        //-- initialising the activity view controller
+        UIActivityViewController *avc = [[UIActivityViewController alloc]
+                                         initWithActivityItems:activityItems
+                                         applicationActivities:@[ [[PocketAPIActivity alloc] init] ]];
+        
+        //-- define the activity view completion handler
+        avc.completionHandler = ^(NSString *activityType, BOOL completed){
+            CCLOG(@"Activity Type selected: %@", activityType);
+            if (completed)
+            {
+                CCLOG(@"Selected activity was performed.");
+                NSString *successMessage = @"Action Performed!";
+                if ([activityType isEqualToString:@"Pocket"])
+                {
+                    successMessage = @"Link added to Pocket.";
+                }
+                else if ([activityType isEqualToString:@"com.apple.UIKit.activity.Message"])
+                {
+                    successMessage = @"Link messaged successfully!";
+                }
+                else if ([activityType isEqualToString:@"com.apple.UIKit.activity.PostToTwitter"])
+                {
+                    successMessage = @"Link tweeted successfully!";
+                }
+                else if ([activityType isEqualToString:@"com.apple.UIKit.activity.SaveToCameraRoll"])
+                {
+                    successMessage = @"Image saved to Camera Roll!";
+                }
+                
+                AppDelegate *appDelegate = (AppDelegate*)[[UIApplication sharedApplication] delegate];
+                ALAlertBanner *banner = [ALAlertBanner alertBannerForView:appDelegate.window
+                                                                    style:ALAlertBannerStyleSuccess
+                                                                 position:ALAlertBannerPositionTop
+                                                                    title:@"Success!"
+                                                                 subtitle:successMessage];
+                
+                
+                [banner show];
+            } else {
+                if (activityType == NULL) {
+                    CCLOG(@"User dismissed the view controller without making a selection.");
+                } else {
+                    CCLOG(@"Activity was not performed.");
+                }
+            }
+        };
+        
+        //-- define activity to be excluded (if any)
+        avc.excludedActivityTypes = [NSArray arrayWithObjects:UIActivityTypeAssignToContact, nil];
+        
+        //-- show the activity view controller
+        [self presentViewController:avc
+                           animated:YES completion:nil];
+    }
+    
+    /*
+    if (_actionsSheet)
+    {
         // Dismiss
         [_actionsSheet dismissWithClickedButtonIndex:_actionsSheet.cancelButtonIndex animated:YES];
     } else {
@@ -1206,6 +1283,8 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
             }
         }
     }
+     */
+    
 }
 
 
