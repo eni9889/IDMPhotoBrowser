@@ -732,7 +732,12 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 
 - (id<IDMPhoto>)photoAtIndex:(NSUInteger)index
 {
-    return _newPhotos[index];
+    if ([_newPhotos count] > 0)
+    {
+        return _newPhotos[index];
+    }
+    
+    return nil;
 }
 
 - (IDMCaptionView *)captionViewForPhotoAtIndex:(NSUInteger)index {
