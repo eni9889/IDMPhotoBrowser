@@ -52,6 +52,49 @@ caption = _caption;
 	return [[IDMPhoto alloc] initWithURL:url];
 }
 
++ (NSArray *)photosWithImages:(NSArray *)imagesArray {
+    NSMutableArray *photos = [NSMutableArray arrayWithCapacity:imagesArray.count];
+    
+    for (UIImage *image in imagesArray) {
+        if ([image isKindOfClass:[UIImage class]]) {
+            IDMPhoto *photo = [IDMPhoto photoWithImage:image];
+            [photos addObject:photo];
+        }
+    }
+    
+    return photos;
+}
+
++ (NSArray *)photosWithFilePaths:(NSArray *)pathsArray {
+    NSMutableArray *photos = [NSMutableArray arrayWithCapacity:pathsArray.count];
+    
+    for (NSString *path in pathsArray) {
+        if ([path isKindOfClass:[NSString class]]) {
+            IDMPhoto *photo = [IDMPhoto photoWithFilePath:path];
+            [photos addObject:photo];
+        }
+    }
+    
+    return photos;
+}
+
++ (NSArray *)photosWithURLs:(NSArray *)urlsArray {
+    NSMutableArray *photos = [NSMutableArray arrayWithCapacity:urlsArray.count];
+    
+    for (id url in urlsArray) {
+        if ([url isKindOfClass:[NSURL class]]) {
+            IDMPhoto *photo = [IDMPhoto photoWithURL:url];
+            [photos addObject:photo];
+        }
+        else if ([url isKindOfClass:[NSString class]]) {
+            IDMPhoto *photo = [IDMPhoto photoWithURL:[NSURL URLWithString:url]];
+            [photos addObject:photo];
+        }
+    }
+    
+    return photos;
+}
+
 #pragma mark NSObject
 
 - (id)initWithImage:(UIImage *)image {
@@ -99,8 +142,10 @@ caption = _caption;
             // Load async from web (using AFNetworking)
             __weak IDMPhoto *blockSafeSelf = self;
             NSURLRequest *request = [NSURLRequest requestWithURL:_photoURL];
-            AFImageRequestOperation *operation = [[AFImageRequestOperation alloc] initWithRequest:request];
-        
+            
+            AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
+            operation.responseSerializer = [AFImageResponseSerializer serializer];
+            
             [operation setDownloadProgressBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
                 CGFloat progress = ((CGFloat)totalBytesRead)/((CGFloat)totalBytesExpectedToRead);
                 if (blockSafeSelf.progressUpdateBlock)
@@ -110,27 +155,27 @@ caption = _caption;
             }];
             
             [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject)
-            {
-                CCLOG(@"Got image with mime type: %@",operation.response.MIMEType);
-                if ([[operation.response.MIMEType lowercaseString] isEqualToString:@"image/gif"])
-                {
-                    CCLOG(@"Request operation done");
-                    blockSafeSelf.underlyingImage = [UIImage animatedImageWithAnimatedGIFData:operation.responseData];
-                }
-                else
-                {
-                    blockSafeSelf.underlyingImage = responseObject;
-                }
-                
-                [blockSafeSelf performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
-                
-            } failure:^(AFHTTPRequestOperation *operation, NSError *error)
-            {
-                // Failed - no source
-                self.underlyingImage = nil;
-                [self imageLoadingComplete];
-                
-            }];
+             {
+                 CCLOG(@"Got image with mime type: %@",operation.response.MIMEType);
+                 if ([[operation.response.MIMEType lowercaseString] isEqualToString:@"image/gif"])
+                 {
+                     CCLOG(@"Request operation done");
+                     blockSafeSelf.underlyingImage = [UIImage animatedImageWithAnimatedGIFData:operation.responseData];
+                 }
+                 else
+                 {
+                     blockSafeSelf.underlyingImage = responseObject;
+                 }
+                 
+                 [blockSafeSelf performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
+                 
+             } failure:^(AFHTTPRequestOperation *operation, NSError *error)
+             {
+                 // Failed - no source
+                 self.underlyingImage = nil;
+                 [self imageLoadingComplete];
+                 
+             }];
             
             [operation start];
             
@@ -194,15 +239,10 @@ caption = _caption;
 {
     @autoreleasepool {
         @try {
-            NSError *error = nil;
-            NSData *data = [NSData dataWithContentsOfFile:_photoPath options:NSDataReadingUncached error:&error];
-            if (!error) {
-                self.underlyingImage = [[UIImage alloc] initWithData:data];
-            } else {
-                self.underlyingImage = nil;
-                IDMLog(@"Photo from file error: %@", error);
+            self.underlyingImage = [UIImage imageWithContentsOfFile:_photoPath];
+            if (!_underlyingImage) {
+                //IDMLog(@"Error loading photo from path: %@", _photoPath);
             }
-        } @catch (NSException *exception) {
         } @finally {
             self.underlyingImage = [self decodedImageWithImage: self.underlyingImage];
             [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];

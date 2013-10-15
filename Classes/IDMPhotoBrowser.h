@@ -11,7 +11,6 @@
 #import "IDMPhoto.h"
 #import "IDMPhotoProtocol.h"
 #import "IDMCaptionView.h"
-
 #import "RKCommentButton.h"
 #import "RKStory.h"
 #import "RKCommentsViewController.h"
@@ -31,9 +30,10 @@ typedef void (^IDCompletionHandler)(id response, NSError *error);
 @class IDMPhotoBrowser;
 @protocol IDMPhotoBrowserDelegate <NSObject>
 @optional
-- (void)photoBrowser:(IDMPhotoBrowser *)photoBrowser didDismissActionSheetWithButtonIndex:(NSUInteger)index;
-- (IDMCaptionView *)photoBrowser:(IDMPhotoBrowser *)photoBrowser captionViewForPhotoAtIndex:(NSUInteger)index;
+- (void)photoBrowser:(IDMPhotoBrowser *)photoBrowser didShowPhotoAtIndex:(NSUInteger)index;
 - (void)photoBrowser:(IDMPhotoBrowser *)photoBrowser didDismissAtPageIndex:(NSUInteger)index;
+- (void)photoBrowser:(IDMPhotoBrowser *)photoBrowser didDismissActionSheetWithButtonIndex:(NSUInteger)buttonIndex photoIndex:(NSUInteger)photoIndex;
+- (IDMCaptionView *)photoBrowser:(IDMPhotoBrowser *)photoBrowser captionViewForPhotoAtIndex:(NSUInteger)index;
 @end
 
 // IDMPhotoBrowser
@@ -44,24 +44,41 @@ typedef void (^IDCompletionHandler)(id response, NSError *error);
 
 // Toolbar customization
 @property (nonatomic) BOOL displayToolbar;
-@property (nonatomic) BOOL displayArrowButton;
 @property (nonatomic) BOOL displayCounterLabel;
+@property (nonatomic) BOOL displayArrowButton;
 @property (nonatomic) BOOL displayActionButton;
 @property (nonatomic, retain) NSArray *actionButtonTitles;
+@property (nonatomic, weak) UIImage *leftArrowImage, *leftArrowSelectedImage;
+@property (nonatomic, weak) UIImage *rightArrowImage, *rightArrowSelectedImage;
 
-//@property (nonatomic, strong) RKCommentButton *commentButton;
 @property (nonatomic, strong) RKStory *story;
-
-// Customization
+// View customization
+@property (nonatomic) BOOL displayDoneButton;
 @property (nonatomic) BOOL useWhiteBackgroundColor;
+@property (nonatomic, weak) UIImage *doneButtonImage;
+@property (nonatomic, weak) UIColor *trackTintColor, *progressTintColor;
+
+@property (nonatomic, weak) UIImage *scaleImage;
+
+// defines zooming of the background defauly 1.0
+@property (nonatomic) float backgroundScaleFactor;
+
+// animation time defult .28
+@property (nonatomic) float animationDuration;
 
 -(void)loadImgurAlbumWithID:(NSString *)albumID withHandler:(IDCompletionHandler)handler;
 
 // Init
 - (id)initWithPhotos:(NSArray *)photosArray;
 
-// Init with animation
+// Init (animated)
 - (id)initWithPhotos:(NSArray *)photosArray animatedFromView:(UIView*)view;
+
+// Init with NSURL objects
+- (id)initWithPhotoURLs:(NSArray *)photoURLsArray;
+
+// Init with NSURL objects (animated)
+- (id)initWithPhotoURLs:(NSArray *)photoURLsArray animatedFromView:(UIView*)view;
 
 // Reloads the photo browser and refetches data
 - (void)reloadData;
@@ -71,5 +88,8 @@ typedef void (^IDCompletionHandler)(id response, NSError *error);
 
 // Get IDMPhoto at index
 - (id<IDMPhoto>)photoAtIndex:(NSUInteger)index;
+
+// Change Sender View
+//- (void)setSenderViewForAnimation:(UIView*)senderView;
 
 @end

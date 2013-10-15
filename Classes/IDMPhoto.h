@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "IDMPhotoProtocol.h"
 #import "AFNetworking.h"
+
 #import "UIImage+animatedGIF.h"
 
 // This class models a photo/image and it's caption
@@ -29,6 +30,10 @@ typedef void (^IDMProgressUpdateBlock)(CGFloat progress);
 + (IDMPhoto *)photoWithImage:(UIImage *)image;
 + (IDMPhoto *)photoWithFilePath:(NSString *)path;
 + (IDMPhoto *)photoWithURL:(NSURL *)url;
+
++ (NSArray *)photosWithImages:(NSArray *)imagesArray;
++ (NSArray *)photosWithFilePaths:(NSArray *)pathsArray;
++ (NSArray *)photosWithURLs:(NSArray *)urlsArray;
 
 // Init
 - (id)initWithImage:(UIImage *)image;
