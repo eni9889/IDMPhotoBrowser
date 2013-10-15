@@ -606,7 +606,7 @@ CGFloat SVProgressHUDRingThickness = 6;
 		stringLabel.backgroundColor = [UIColor clearColor];
 		stringLabel.adjustsFontSizeToFitWidth = YES;
 		#if __IPHONE_OS_VERSION_MIN_REQUIRED < 60000
-			stringLabel.textAlignment = UITextAlignmentCenter;
+			stringLabel.textAlignment = NSTextAlignmentCenter;
 		#else
 			stringLabel.textAlignment = NSTextAlignmentCenter;
 		#endif
