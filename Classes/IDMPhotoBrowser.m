@@ -1240,40 +1240,50 @@ NSLocalizedStringFromTableInBundle((key), nil, [NSBundle bundleWithPath:[[NSBund
     id <IDMPhoto> photo = [self photoAtIndex:_currentPageIndex];
     
     if ([self numberOfPhotos] > 0 && [photo underlyingImage]) {
-        if(!_actionButtonTitles)
-        {
-            // Activity view
-            NSMutableArray *activityItems = [NSMutableArray arrayWithObject:[photo underlyingImage]];
-            if (photo.caption) [activityItems addObject:photo.caption];
-            
-            self.activityViewController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:nil];
-            
-            __typeof__(self) __weak selfBlock = self;
-            [self.activityViewController setCompletionHandler:^(NSString *activityType, BOOL completed) {
-                [selfBlock hideControlsAfterDelay];
-                selfBlock.activityViewController = nil;
-            }];
-            
-            [self presentViewController:self.activityViewController animated:YES completion:nil];
+        
+        BOOL handleActionButtonPress = YES;
+        
+        if ([self.delegate respondsToSelector:@selector(photoBrowser:didPressActionButton)]) {
+            handleActionButtonPress = ![self.delegate photoBrowser:self didPressActionButton];
         }
-        else
-        {
-            // Action sheet
-            self.actionsSheet = [UIActionSheet new];
-            self.actionsSheet.delegate = self;
-            for(NSString *action in _actionButtonTitles) {
-                [self.actionsSheet addButtonWithTitle:action];
+        
+        if (handleActionButtonPress) {
+            if(!_actionButtonTitles)
+            {
+                // Activity view
+                NSMutableArray *activityItems = [NSMutableArray arrayWithObject:[photo underlyingImage]];
+                if (photo.caption) [activityItems addObject:photo.caption];
+                
+                self.activityViewController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:nil];
+                
+                __typeof__(self) __weak selfBlock = self;
+                [self.activityViewController setCompletionHandler:^(NSString *activityType, BOOL completed) {
+                    [selfBlock hideControlsAfterDelay];
+                    selfBlock.activityViewController = nil;
+                }];
+                
+                [self presentViewController:self.activityViewController animated:YES completion:nil];
             }
-            
-            self.actionsSheet.cancelButtonIndex = [self.actionsSheet addButtonWithTitle:IDMPhotoBrowserLocalizedStrings(@"Cancel")];
-            self.actionsSheet.actionSheetStyle = UIActionSheetStyleBlackTranslucent;
-            
-            if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-                [_actionsSheet showFromBarButtonItem:sender animated:YES];
-            } else {
-                [_actionsSheet showInView:self.view];
+            else
+            {
+                // Action sheet
+                self.actionsSheet = [UIActionSheet new];
+                self.actionsSheet.delegate = self;
+                for(NSString *action in _actionButtonTitles) {
+                    [self.actionsSheet addButtonWithTitle:action];
+                }
+                
+                self.actionsSheet.cancelButtonIndex = [self.actionsSheet addButtonWithTitle:IDMPhotoBrowserLocalizedStrings(@"Cancel")];
+                self.actionsSheet.actionSheetStyle = UIActionSheetStyleBlackTranslucent;
+                
+                if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+                    [_actionsSheet showFromBarButtonItem:sender animated:YES];
+                } else {
+                    [_actionsSheet showInView:self.view];
+                }
             }
         }
+        
         
         // Keep controls hidden
         [self setControlsHidden:NO animated:YES permanent:YES];
