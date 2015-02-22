@@ -17,7 +17,7 @@
 @class IDMPhotoBrowser;
 @protocol IDMPhotoBrowserDelegate <NSObject>
 @optional
-- (BOOL)photoBrowser:(IDMPhotoBrowser *)photoBrowser didPressActionButton;
+- (BOOL)photoBrowser:(IDMPhotoBrowser *)photoBrowser didPressActionButtonWithPhoto:(IDMPhoto *)photo;
 - (void)photoBrowser:(IDMPhotoBrowser *)photoBrowser didShowPhotoAtIndex:(NSUInteger)index;
 - (void)photoBrowser:(IDMPhotoBrowser *)photoBrowser didDismissAtPageIndex:(NSUInteger)index;
 - (void)photoBrowser:(IDMPhotoBrowser *)photoBrowser didDismissActionSheetWithButtonIndex:(NSUInteger)buttonIndex photoIndex:(NSUInteger)photoIndex;

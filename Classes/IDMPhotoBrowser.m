@@ -1243,8 +1243,8 @@ NSLocalizedStringFromTableInBundle((key), nil, [NSBundle bundleWithPath:[[NSBund
         
         BOOL handleActionButtonPress = YES;
         
-        if ([self.delegate respondsToSelector:@selector(photoBrowser:didPressActionButton)]) {
-            handleActionButtonPress = ![self.delegate photoBrowser:self didPressActionButton];
+        if ([self.delegate respondsToSelector:@selector(photoBrowser:didPressActionButtonWithPhoto:)]) {
+            handleActionButtonPress = ![self.delegate photoBrowser:self didPressActionButtonWithPhoto:photo];
         }
         
         if (handleActionButtonPress) {
